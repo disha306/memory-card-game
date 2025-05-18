@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Card Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #b584d6;
+      font-family: Arial, sans-serif;
+    }
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(4, 100px);
+      gap: 10px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      font-size: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .flipped {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+    }
+    .matched {
+      background-color: #27ae60;
+    }
+    .score-board {
+      text-align: center;
+      margin-bottom: 20px;
+      margin-right: 100px;
+      font: 1em Georgia, serif;
+      background-color: #ffffff;
+      border-radius:1rem;
+      height:100px;
+    align-content:center;
+      width:500px;
+    }
+    a {
+  color: inherit;     
+  text-decoration: none; 
+  color:#ffffff;
+  background-color: #b584d6;
+  border-radius:5px;
+  
+}
+
+</style>
+</head>
+<body>
+
+  <div class="score-board">
+    <h1>Memory Card Game</h1>
+    <p>Matches: <span id="matches">0</span></p>
+   <a href="G:\LOST.DIR\code\card3.HTML">Next Level</a>
+  </div>
+
+  <div class="game-container" id="gameContainer"></div>
+
+  <script>
+    const cardValues = ['🌳', '🐦', '🍎', '🍩', '🍉', '🍓', '🍕', '🍔'];
+let cards = [...cardValues, ...cardValues];
+let flippedCards = [];
+let matchedCards = 0;
+let gameOver = false;
+let timer;
+let timeLeft = 60; // in seconds
+
+const gameContainer = document.getElementById("gameContainer");
+const matchesDisplay = document.getElementById("matches");
+const timerDisplay = document.getElementById("timer");
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+}
+
+function createCards() {
+  gameContainer.innerHTML = '';
+  cards.forEach((value) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.setAttribute("data-value", value);
+    card.textContent = '';
+    card.addEventListener("click", () => flipCard(card));
+    gameContainer.appendChild(card);
+  });
+}
+
+function flipCard(card) {
+  if (flippedCards.length === 2 || card.classList.contains("flipped") || gameOver) return;
+
+  card.textContent = card.getAttribute("data-value");
+  card.classList.add("flipped");
+  flippedCards.push(card);
+
+  if (flippedCards.length === 2) {
+    setTimeout(checkForMatch, 800);
+  }
+}
+
+function checkForMatch() {
+  const [card1, card2] = flippedCards;
+
+  if (card1.getAttribute("data-value") === card2.getAttribute("data-value")) {
+    card1.classList.add("matched");
+    card2.classList.add("matched");
+    matchedCards++;
+    matchesDisplay.textContent = matchedCards;
+
+    if (matchedCards === cardValues.length) {
+      gameOver = true;
+      clearInterval(timer);
+      setTimeout(() => {
+        document.getElementById("popup").style.display = "flex";
+      }, 500);
+    }
+  } else {
+    card1.classList.remove("flipped");
+    card2.classList.remove("flipped");
+    card1.textContent = '';
+    card2.textContent = '';
+  }
+
+  flippedCards = [];
+}
+
+function startTimer() {
+  timerDisplay.textContent = timeLeft;
+  timer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      if (!gameOver) {
+        gameOver = true;
+        document.getElementById("timeoutPopup").style.display = "flex";
+      }
+    }
+  }, 1000);
+}
+
+function goToNextLevel() {
+  window.location.href = "level2.html"; // Change if needed
+}
+
+function restartGame() {
+  cards = [...cardValues, ...cardValues];
+  timeLeft = 60;
+  matchedCards = 0;
+  flippedCards = [];
+  gameOver = false;
+  document.getElementById("popup").style.display = "none";
+  document.getElementById("timeoutPopup").style.display = "none";
+  matchesDisplay.textContent = matchedCards;
+  timerDisplay.textContent = timeLeft;
+  clearInterval(timer);
+  shuffleCards();
+  createCards();
+  startTimer();
+}
+
+function startGame() {
+  shuffleCards();
+  createCards();
+  startTimer();
+}
+
+startGame();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Card Game - Level 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #b584d6;
+      font-family: Arial, sans-serif;
+    }
+    .score-board {
+      text-align: center;
+      margin-bottom: 20px;
+      background-color: #ffffff;
+      border-radius: 1rem;
+      padding: 20px;
+      width: 500px;
+    }
+    .score-board a {
+      text-decoration: none;
+      background-color: #b584d6;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    #timer {
+      font-weight: bold;
+    }
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(6, 80px);
+      gap: 10px;
+    }
+    .card {
+      width: 80px;
+      height: 80px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .flipped {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+    }
+    .matched {
+      background-color: #27ae60;
+    }
+    .popup {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 1rem;
+      padding: 20px;
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+    .popup button {
+      background-color: #b584d6;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="score-board">
+    <h1>Memory Game - Level 2</h1>
+    <p>Matches: <span id="matches">0</span> | Time Left: <span id="timer">60</span>s</p>
+  </div>
+
+  <div class="game-container" id="gameContainer"></div>
+
+  <div class="popup" id="popup">
+    <h2>🎉 You Win!</h2>
+    <button onclick="goToNextLevel()">Next Level</button>
+  </div>
+
+  <div class="popup" id="timeoutPopup">
+    <h2>⏰ Time's Up!</h2>
+    <button onclick="restartGame()">Try Again</button>
+  </div>
+
+  <script>
+    const cardValues = ['🐱', '🐶', '🦊', '🐸', '🦁', '🐼', '🐨', '🦄', '🐙', '🐢', '🐍', '🐠'];
+    let cards = [...cardValues, ...cardValues];
+    let flippedCards = [];
+    let matchedCards = 0;
+    let gameOver = false;
+    let timer;
+    let timeLeft = 60;
+
+    const gameContainer = document.getElementById("gameContainer");
+    const matchesDisplay = document.getElementById("matches");
+    const timerDisplay = document.getElementById("timer");
+
+    function shuffleCards() {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+    }
+
+    function createCards() {
+      gameContainer.innerHTML = '';
+      cards.forEach(value => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+        card.setAttribute("data-value", value);
+        card.textContent = '';
+        card.addEventListener("click", () => flipCard(card));
+        gameContainer.appendChild(card);
+      });
+    }
+
+    function flipCard(card) {
+      if (flippedCards.length === 2 || card.classList.contains("flipped") || gameOver) return;
+
+      card.textContent = card.getAttribute("data-value");
+      card.classList.add("flipped");
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        setTimeout(checkForMatch, 800);
+      }
+    }
+
+    function checkForMatch() {
+      const [card1, card2] = flippedCards;
+
+      if (card1.getAttribute("data-value") === card2.getAttribute("data-value")) {
+        card1.classList.add("matched");
+        card2.classList.add("matched");
+        matchedCards++;
+        matchesDisplay.textContent = matchedCards;
+
+        if (matchedCards === cardValues.length) {
+          gameOver = true;
+          clearInterval(timer);
+          setTimeout(() => document.getElementById("popup").style.display = "block", 500);
+        }
+      } else {
+        card1.classList.remove("flipped");
+        card2.classList.remove("flipped");
+        card1.textContent = '';
+        card2.textContent = '';
+      }
+
+      flippedCards = [];
+    }
+
+    function startTimer() {
+      timerDisplay.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          if (!gameOver) {
+            gameOver = true;
+            document.getElementById("timeoutPopup").style.display = "block";
+          }
+        }
+      }, 1000);
+    }
+
+    function goToNextLevel() {
+      window.location.href = "level3.html"; // Change to actual level 3 path
+    }
+
+    function restartGame() {
+      cards = [...cardValues, ...cardValues];
+      timeLeft = 60;
+      matchedCards = 0;
+      flippedCards = [];
+      gameOver = false;
+      document.getElementById("popup").style.display = "none";
+      document.getElementById("timeoutPopup").style.display = "none";
+      matchesDisplay.textContent = matchedCards;
+      clearInterval(timer);
+      shuffleCards();
+      createCards();
+      startTimer();
+    }
+
+    function startGame() {
+      shuffleCards();
+      createCards();
+      startTimer();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
